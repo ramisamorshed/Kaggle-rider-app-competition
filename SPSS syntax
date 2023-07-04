@@ -1,0 +1,75 @@
+PRESERVE.
+SET DECIMAL DOT.
+GET DATA /TYPE=TXT
+ /FILE="D:\Users\THINKPAD\Downloads\final excel.csv"
+ /DELIMITERS=","
+ /QUALIFIER='"'
+ /ARRANGEMENT=DELIMITED
+ /FIRSTCASE=2
+ /DATATYPEMIN PERCENTAGE=95.0
+ /VARIABLES=
+ V1 AUTO
+ hashed_id AUTO
+ rider_id AUTO
+ driver_id AUTO
+ estimated_ride_duration AUTO
+ estimated_ride_distance AUTO
+ status AUTO
+ rating AUTO
+ drivers_tried AUTO
+ review_requested AUTO
+ discount AUTO
+ canceled_by AUTO
+ payment_type AUTO
+ estimated_fare AUTO
+ howmanydriverstriedforthattrip AUTO
+ /MAP.
+RESTORE.
+CACHE.
+EXECUTE.
+Data written to the working file.
+15 variables and 3559 cases written.
+Variable: V1 Type: Number Format : F4
+Variable: hashed_id Type: String Format : A13
+Variable: rider_id Type: Number Format : F7
+Variable: driver_id Type: Number Format : F7
+Variable: estimated_ride_duration Type: Number Format : F4
+Variable: estimated_ride_distance Type: Number Format : F5
+Variable: status Type: String Format : A9 One or more values were 
+truncated.
+Variable: rating Type: Number Format : F1 One or more values were 
+set to system-missing.
+Variable: drivers_tried Type: Number Format : F40 One or more values were 
+set to system-missing.
+Variable: review_requested Type: Number Format : F1
+Variable: discount Type: Number Format : F2 One or more values were 
+set to system-missing.
+Variable: canceled_by Type: Number Format : F7 One or more values were 
+set to system-missing.
+Variable: payment_type Type: Number Format : F1
+Variable: estimated_fare Type: Number Format : F3
+Variable: howmanydriverstriedforthattrip Type: Number Format : F2
+DATASET NAME DataSet1 WINDOW=FRONT.
+COMPUTE mixed=(estimated_ride_duration + estimated_ride_distance) / 2.
+EXECUTE.
+RECODE status ('COMPLETED'='1') ('CANCELED'='0').
+EXECUTE.
+COMPUTE discount_new=discount.
+EXECUTE.
+IF (MISSING(discount_new)) discount_new=0.
+EXECUTE.
+ 
+REGRESSION
+ /MISSING LISTWISE
+ /STATISTICS COEFF OUTS R ANOVA
+ /CRITERIA=PIN(.05) POUT(.10)
+ /NOORIGIN
+ /DEPENDENT estimated_fare
+ /METHOD=ENTER MIXED discount_new status.
+DATASET ACTIVATE completed.
+GRAPH
+ /SCATTERPLOT(BIVAR)=mixed WITH estimated_fare
+ /MISSING=LISTWISE.
+GRAPH
+ /SCATTERPLOT(BIVAR)=discount WITH estimated_fare
+ /MISSING=LISTWISE.
